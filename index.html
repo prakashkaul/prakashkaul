@@ -13,8 +13,8 @@
         <h1 id="page-title">Academic Level Calculator</h1>
         <p>
           Enter each subject, the maximum marks possible, and the marks obtained.
-          The calculator maps each subject percentage to an academic level, then
-          adds those subject levels to produce the total academic level achieved.
+          The calculator totals the marks, computes the aggregate percentage, and
+          maps it to the rubric below.
         </p>
       </section>
 
@@ -24,7 +24,7 @@
             <p class="eyebrow">Rubric</p>
             <h2 id="rubric-title">Academic levels</h2>
           </div>
-          <p class="hint">Each subject is banded first; the total academic level is the sum of subject levels.</p>
+          <p class="hint">The final level is based on aggregate percentage across all subjects.</p>
         </div>
         <div class="rubric-grid" id="rubricGrid" aria-live="polite"></div>
       </section>
@@ -53,7 +53,7 @@
             </table>
           </div>
           <p class="error" id="formError" role="alert"></p>
-          <button type="submit" class="primary-action">Calculate total academic level</button>
+          <button type="submit" class="primary-action">Calculate academic level</button>
         </form>
       </section>
 
@@ -61,7 +61,7 @@
         <p class="eyebrow">Result</p>
         <h2 id="result-title">Total academic level achieved</h2>
         <div id="result" class="result-placeholder" aria-live="polite">
-          Add marks and calculate to see each subject level and the student's total academic level.
+          Add marks and calculate to see the student's academic level.
         </div>
       </section>
     </main>

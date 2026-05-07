@@ -218,19 +218,6 @@ input:focus {
   margin: 0.25rem 0 0;
 }
 
-.subject-results-wrap {
-  margin: 1rem 0;
-  overflow-x: auto;
-}
-
-.subject-results {
-  min-width: 620px;
-}
-
-.subject-results td:last-child {
-  font-weight: 800;
-}
-
 .sr-only {
   clip: rect(0, 0, 0, 0);
   border: 0;

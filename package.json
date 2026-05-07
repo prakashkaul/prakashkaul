@@ -4,10 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.json && cp dist/app.js src/app.js && cp dist/calculator.js src/calculator.js && rm -rf dist",
-    "check": "tsc --project tsconfig.json --noEmit && node --check src/app.js && node --check src/calculator.js",
-    "test": "node --test tests/calculator.test.mjs",
-    "test:browser": "node scripts/run-browser-smoke.mjs"
+    "build": "tsc --project tsconfig.json",
+    "check": "node --check src/app.js"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

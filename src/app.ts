@@ -1,10 +1,55 @@
-import {
-  calculateAcademicResult,
-  rubric,
-  validateSubjects,
-  type AcademicResult,
-  type SubjectMark,
-} from './calculator.js';
+type RubricLevel = {
+  minPercentage: number;
+  maxPercentage: number;
+  level: string;
+  description: string;
+};
+
+type SubjectMark = {
+  subject: string;
+  maximum: number;
+  obtained: number;
+};
+
+type AcademicResult = {
+  totalMaximum: number;
+  totalObtained: number;
+  percentage: number;
+  rubricLevel: RubricLevel;
+};
+
+const rubric: RubricLevel[] = [
+  {
+    minPercentage: 90,
+    maxPercentage: 100,
+    level: 'Level 5 - Outstanding',
+    description: 'Consistently exceeds expected academic standards.',
+  },
+  {
+    minPercentage: 75,
+    maxPercentage: 89.99,
+    level: 'Level 4 - Advanced',
+    description: 'Demonstrates strong command of the expected standards.',
+  },
+  {
+    minPercentage: 60,
+    maxPercentage: 74.99,
+    level: 'Level 3 - Proficient',
+    description: 'Meets the expected academic standards.',
+  },
+  {
+    minPercentage: 40,
+    maxPercentage: 59.99,
+    level: 'Level 2 - Developing',
+    description: 'Partially meets standards and needs targeted support.',
+  },
+  {
+    minPercentage: 0,
+    maxPercentage: 39.99,
+    level: 'Level 1 - Beginning',
+    description: 'Needs significant academic support to meet standards.',
+  },
+];
 
 const addSubjectButton = document.querySelector<HTMLButtonElement>('#addSubjectButton');
 const form = document.querySelector<HTMLFormElement>('#marksForm');
@@ -43,7 +88,7 @@ function renderRubric(): void {
     .map(
       (item) => `
         <article class="rubric-item">
-          <strong>Academic Level ${item.academicLevel}</strong>
+          <strong>${item.level}</strong>
           <span>${formatNumber(item.minPercentage)}% - ${formatNumber(item.maxPercentage)}%</span>
           <p>${item.description}</p>
         </article>
@@ -97,23 +142,63 @@ function readSubjectMarks(): SubjectMark[] {
   });
 }
 
-function renderResult(academicResult: AcademicResult): void {
-  const subjectRows = academicResult.subjectResults
-    .map(
-      (subject) => `
-        <tr>
-          <td>${subject.subject}</td>
-          <td>${formatNumber(subject.obtained)} / ${formatNumber(subject.maximum)}</td>
-          <td>${formatNumber(subject.percentage)}%</td>
-          <td>AL ${subject.rubricLevel.academicLevel}</td>
-        </tr>
-      `,
-    )
-    .join('');
+function validateSubjects(subjects: SubjectMark[]): string | null {
+  if (subjects.length === 0) {
+    return 'Add at least one subject before calculating.';
+  }
 
+  for (const [index, subject] of subjects.entries()) {
+    const rowNumber = index + 1;
+
+    if (!subject.subject) {
+      return `Enter a subject name in row ${rowNumber}.`;
+    }
+
+    if (!Number.isFinite(subject.maximum) || subject.maximum <= 0) {
+      return `Enter maximum marks greater than 0 for ${subject.subject}.`;
+    }
+
+    if (!Number.isFinite(subject.obtained) || subject.obtained < 0) {
+      return `Enter marks obtained of 0 or more for ${subject.subject}.`;
+    }
+
+    if (subject.obtained > subject.maximum) {
+      return `Marks obtained cannot exceed maximum marks for ${subject.subject}.`;
+    }
+  }
+
+  return null;
+}
+
+function findRubricLevel(percentage: number): RubricLevel {
+  const matchedLevel = rubric.find(
+    (item) => percentage >= item.minPercentage && percentage <= item.maxPercentage,
+  );
+
+  if (!matchedLevel) {
+    throw new Error(`No rubric level found for ${percentage}%.`);
+  }
+
+  return matchedLevel;
+}
+
+function calculateAcademicResult(subjects: SubjectMark[]): AcademicResult {
+  const totalMaximum = subjects.reduce((sum, subject) => sum + subject.maximum, 0);
+  const totalObtained = subjects.reduce((sum, subject) => sum + subject.obtained, 0);
+  const percentage = (totalObtained / totalMaximum) * 100;
+
+  return {
+    totalMaximum,
+    totalObtained,
+    percentage,
+    rubricLevel: findRubricLevel(percentage),
+  };
+}
+
+function renderResult(academicResult: AcademicResult): void {
   elements.result.classList.remove('result-placeholder');
   elements.result.innerHTML = `
-    <div class="level-badge">Aggregate AL ${academicResult.aggregateLevel}</div>
+    <div class="level-badge">${academicResult.rubricLevel.level}</div>
     <dl class="summary-grid">
       <div>
         <dt>Total marks obtained</dt>
@@ -124,24 +209,11 @@ function renderResult(academicResult: AcademicResult): void {
         <dd>${formatNumber(academicResult.totalMaximum)}</dd>
       </div>
       <div>
-        <dt>Total academic level achieved</dt>
-        <dd>${academicResult.aggregateLevel}</dd>
+        <dt>Aggregate percentage</dt>
+        <dd>${formatNumber(academicResult.percentage)}%</dd>
       </div>
     </dl>
-    <div class="subject-results-wrap">
-      <table class="subject-results">
-        <thead>
-          <tr>
-            <th scope="col">Subject</th>
-            <th scope="col">Marks</th>
-            <th scope="col">Percentage</th>
-            <th scope="col">Academic level</th>
-          </tr>
-        </thead>
-        <tbody>${subjectRows}</tbody>
-      </table>
-    </div>
-    <p>Each subject is mapped to an academic level first; the aggregate is the sum of those subject levels.</p>
+    <p>${academicResult.rubricLevel.description}</p>
   `;
 }
 
