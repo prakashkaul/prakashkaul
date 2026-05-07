@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Level Calculator</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">Student assessment helper</p>
+        <h1 id="page-title">Academic Level Calculator</h1>
+        <p>
+          Enter each subject, the maximum marks possible, and the marks obtained.
+          The calculator maps each subject percentage to an academic level, then
+          adds those subject levels to produce the total academic level achieved.
+        </p>
+      </section>
+
+      <section class="card" aria-labelledby="rubric-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Rubric</p>
+            <h2 id="rubric-title">Academic levels</h2>
+          </div>
+          <p class="hint">Each subject is banded first; the total academic level is the sum of subject levels.</p>
+        </div>
+        <div class="rubric-grid" id="rubricGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="card" aria-labelledby="marks-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Marks entry</p>
+            <h2 id="marks-title">Subjects and scores</h2>
+          </div>
+          <button type="button" id="addSubjectButton">Add subject</button>
+        </div>
+
+        <form id="marksForm" novalidate>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Subject</th>
+                  <th scope="col">Maximum marks</th>
+                  <th scope="col">Marks obtained</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subjectsBody"></tbody>
+            </table>
+          </div>
+          <p class="error" id="formError" role="alert"></p>
+          <button type="submit" class="primary-action">Calculate total academic level</button>
+        </form>
+      </section>
+
+      <section class="card result-card" aria-labelledby="result-title">
+        <p class="eyebrow">Result</p>
+        <h2 id="result-title">Total academic level achieved</h2>
+        <div id="result" class="result-placeholder" aria-live="polite">
+          Add marks and calculate to see each subject level and the student's total academic level.
+        </div>
+      </section>
+    </main>
+
+    <template id="subjectRowTemplate">
+      <tr>
+        <td>
+          <label class="sr-only">Subject name</label>
+          <input name="subject" type="text" placeholder="e.g. Mathematics" required />
+        </td>
+        <td>
+          <label class="sr-only">Maximum marks</label>
+          <input name="maximum" type="number" min="1" step="0.01" placeholder="100" required />
+        </td>
+        <td>
+          <label class="sr-only">Marks obtained</label>
+          <input name="obtained" type="number" min="0" step="0.01" placeholder="85" required />
+        </td>
+        <td>
+          <button type="button" class="remove-row">Remove</button>
+        </td>
+      </tr>
+    </template>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

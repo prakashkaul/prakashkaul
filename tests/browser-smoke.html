@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser smoke test - Academic Level Calculator</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+
+      iframe {
+        border: 1px solid #d5ddf0;
+        height: 760px;
+        width: min(100%, 1100px);
+      }
+
+      .pass {
+        color: #067647;
+      }
+
+      .fail {
+        color: #b42318;
+      }
+    </style>
+  </head>
+  <body data-test-status="running">
+    <h1>Browser smoke test</h1>
+    <p id="status">Running academic calculator browser smoke test...</p>
+    <iframe id="appFrame" src="../index.html" title="Academic Level Calculator test frame"></iframe>
+
+    <script type="module">
+      const status = document.querySelector('#status');
+      const frame = document.querySelector('#appFrame');
+
+      function setStatus(result, message) {
+        document.body.dataset.testStatus = result;
+        status.className = result === 'passed' ? 'pass' : 'fail';
+        status.textContent = message;
+        console[result === 'passed' ? 'log' : 'error'](message);
+      }
+
+      function assert(condition, message) {
+        if (!condition) {
+          throw new Error(message);
+        }
+      }
+
+      function waitForFrameLoad() {
+        return new Promise((resolve) => {
+          frame.addEventListener('load', resolve, { once: true });
+        });
+      }
+
+      function nextFrame() {
+        return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      }
+
+      function getRows(documentRef) {
+        return Array.from(documentRef.querySelectorAll('#subjectsBody tr'));
+      }
+
+      function fillRow(row, subject, maximum, obtained) {
+        row.querySelector('input[name="subject"]').value = subject;
+        row.querySelector('input[name="maximum"]').value = String(maximum);
+        row.querySelector('input[name="obtained"]').value = String(obtained);
+      }
+
+      async function runSmokeTest() {
+        await waitForFrameLoad();
+        await nextFrame();
+
+        const appDocument = frame.contentDocument;
+        assert(appDocument, 'Expected the app iframe document to be available.');
+        assert(appDocument.querySelector('#rubricGrid').children.length === 8, 'Expected eight supplied rubric levels.');
+
+        const rows = getRows(appDocument);
+        assert(rows.length === 2, 'Expected two default subject rows.');
+
+        fillRow(rows[0], 'Mathematics', 100, 80);
+        fillRow(rows[1], 'Science', 100, 85);
+        appDocument.querySelector('#marksForm').requestSubmit();
+        await nextFrame();
+
+        const resultText = appDocument.querySelector('#result').textContent;
+        assert(resultText.includes('Aggregate AL 5'), 'Expected aggregate AL 5 for subject ALs 3 and 2.');
+        assert(resultText.includes('AL 3'), 'Expected Mathematics to map to AL 3.');
+        assert(resultText.includes('AL 2'), 'Expected Science to map to AL 2.');
+        assert(resultText.includes('165'), 'Expected total obtained marks to be shown.');
+        assert(resultText.includes('200'), 'Expected total maximum marks to be shown.');
+        assert(resultText.includes('80%'), 'Expected Mathematics percentage to be shown.');
+        assert(resultText.includes('85%'), 'Expected Science percentage to be shown.');
+
+        fillRow(rows[0], 'Mathematics', 100, 110);
+        appDocument.querySelector('#marksForm').requestSubmit();
+        await nextFrame();
+
+        const errorText = appDocument.querySelector('#formError').textContent;
+        assert(
+          errorText === 'Marks obtained cannot exceed maximum marks for Mathematics.',
+          'Expected validation message when obtained marks exceed maximum marks.',
+        );
+
+        setStatus('passed', 'Browser smoke test passed.');
+      }
+
+      runSmokeTest().catch((error) => setStatus('failed', error.message));
+    </script>
+  </body>
+</html>
